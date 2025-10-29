@@ -1,0 +1,162 @@
+#!/usr/bin/env python3
+"""
+DXFya3 - DXF File Monitor and Converter (Simple Version)
+Monitors the DXF folder for new files and automatically converts them to AI format with ExtendScript actions.
+Uses polling instead of file system events to avoid external dependencies.
+"""
+
+import os
+import time
+import subprocess
+import sys
+from pathlib import Path
+import threading
+import queue
+
+class DXFMonitor:
+    """Simple DXF file monitor using polling."""
+    
+    def __init__(self, dxf_folder, converter_script, ai_folder):
+        self.dxf_folder = dxf_folder
+        self.converter_script = converter_script
+        self.ai_folder = ai_folder
+        self.processed_files = set()
+        self.running = True
+        
+    def get_dxf_files(self):
+        """Get list of DXF files in the monitored folder."""
+        if not os.path.exists(self.dxf_folder):
+            return []
+        
+        files = []
+        for file in os.listdir(self.dxf_folder):
+            if file.lower().endswith('.dxf'):
+                file_path = os.path.join(self.dxf_folder, file)
+                files.append(file_path)
+        return files
+    
+    def process_new_files(self):
+        """Process any new DXF files found."""
+        current_files = set(self.get_dxf_files())
+        new_files = current_files - self.processed_files
+        
+        for file_path in new_files:
+            if file_path not in self.processed_files:
+                print(f"\n🔄 New DXF file detected: {os.path.basename(file_path)}")
+                self._convert_file(file_path)
+                self.processed_files.add(file_path)
+    
+    def _convert_file(self, file_path):
+        """Convert a single DXF file to AI format."""
+        try:
+            print(f"📁 Processing: {os.path.basename(file_path)}")
+            
+            # Run the converter script
+            result = subprocess.run([
+                'python3', self.converter_script, '--file', file_path
+            ], capture_output=True, text=True, timeout=120)
+            
+            if result.returncode == 0:
+                print(f"✅ Successfully converted: {os.path.basename(file_path)}")
+                # Show any output from the converter
+                if result.stdout.strip():
+                    print(f"📋 Converter output: {result.stdout.strip()}")
+            else:
+                print(f"❌ Conversion failed: {result.stderr.strip()}")
+                if result.stdout.strip():
+                    print(f"📋 Converter output: {result.stdout.strip()}")
+                
+        except subprocess.TimeoutExpired:
+            print(f"⏰ Conversion timed out for: {os.path.basename(file_path)}")
+        except Exception as e:
+            print(f"❌ Error converting {os.path.basename(file_path)}: {e}")
+    
+    def start_monitoring(self, poll_interval=2):
+        """Start monitoring for new files."""
+        print("🔄 Starting file monitor...")
+        print("Press Ctrl+C to stop monitoring")
+        print("-" * 50)
+        
+        # Process any existing files first
+        existing_files = self.get_dxf_files()
+        if existing_files:
+            print(f"📋 Found {len(existing_files)} existing DXF file(s):")
+            for file_path in existing_files:
+                print(f"   - {os.path.basename(file_path)}")
+                self.processed_files.add(file_path)
+            print("💡 Tip: Move or rename files to trigger conversion")
+        
+        try:
+            while self.running:
+                self.process_new_files()
+                time.sleep(poll_interval)
+        except KeyboardInterrupt:
+            print("\n🛑 Stopping monitor...")
+            self.running = False
+            print("✅ Monitor stopped.")
+
+def check_illustrator_running():
+    """Check if Adobe Illustrator is running."""
+    try:
+        result = subprocess.run(['pgrep', '-f', 'Adobe Illustrator'], 
+                              capture_output=True, text=True)
+        return result.returncode == 0
+    except Exception:
+        return False
+
+def launch_illustrator():
+    """Launch Adobe Illustrator if not already running."""
+    try:
+        subprocess.run(['open', '-a', 'Adobe Illustrator'], check=True)
+        print("🚀 Launching Adobe Illustrator...")
+        time.sleep(5)
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Error launching Illustrator: {e}")
+        return False
+
+def main():
+    """Main function to start the DXF monitor."""
+    # Get script directory
+    script_dir = Path(__file__).parent
+    dxf_folder = script_dir / "DXF"
+    ai_folder = script_dir / "AI"
+    converter_script = script_dir / "dxf_to_ai_converter_working.py"
+    
+    print("🎯 DXFya3 - DXF File Monitor and Converter (Simple)")
+    print("=" * 60)
+    print(f"📁 Monitoring folder: {dxf_folder}")
+    print(f"💾 Output folder: {ai_folder}")
+    print(f"🔧 Converter script: {converter_script}")
+    print("=" * 60)
+    
+    # Ensure folders exist
+    os.makedirs(dxf_folder, exist_ok=True)
+    os.makedirs(ai_folder, exist_ok=True)
+    
+    # Check if converter script exists
+    if not converter_script.exists():
+        print(f"❌ Converter script not found: {converter_script}")
+        print("Please ensure dxf_to_ai_converter.py is in the same directory.")
+        sys.exit(1)
+    
+    # Check if Illustrator is running
+    if not check_illustrator_running():
+        print("⚠️  Adobe Illustrator is not running.")
+        if not launch_illustrator():
+            print("❌ Failed to launch Adobe Illustrator. Please launch it manually.")
+            print("The monitor will continue but conversions may fail.")
+        else:
+            print("✅ Adobe Illustrator launched successfully.")
+    else:
+        print("✅ Adobe Illustrator is running.")
+    
+    # Start monitoring
+    monitor = DXFMonitor(dxf_folder, converter_script, ai_folder)
+    monitor.start_monitoring()
+
+if __name__ == "__main__":
+    main()
+
+
+
