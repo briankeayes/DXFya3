@@ -31,15 +31,17 @@ try {{
         var localDoc = app.open(localFile);
         
         // Find the timestamped layer (should be first layer)
-        var sourceLayer = null;
+        var sourceLayerName = null;
+        var sourceLayerIndex = -1;
         for (var i = 0; i < localDoc.layers.length; i++) {{
             if (localDoc.layers[i].name.match(/\\d{{4}}-\\d{{2}}-\\d{{2}}_\\d{{2}}-\\d{{2}}-\\d{{2}}/)) {{
-                sourceLayer = localDoc.layers[i];
+                sourceLayerName = localDoc.layers[i].name;
+                sourceLayerIndex = i;
                 break;
             }}
         }}
         
-        if (!sourceLayer) {{
+        if (sourceLayerIndex === -1) {{
             localDoc.close(SaveOptions.DONOTSAVECHANGES);
             "ERROR: No timestamped layer found in local file";
         }} else {{
@@ -49,7 +51,26 @@ try {{
                 localDoc.close(SaveOptions.DONOTSAVECHANGES);
                 "ERROR: CC file not found: {cc_file_path}";
             }} else {{
-                var ccDoc = app.open(ccFile);
+                var ccDoc;
+                try {{
+                    ccDoc = app.open(ccFile);
+                }} catch (openError) {{
+                    localDoc.close(SaveOptions.DONOTSAVECHANGES);
+                    "ERROR opening CC file: " + openError.toString();
+                    throw openError;
+                }}
+                
+                // Unlock all layers in CC document
+                try {{
+                    for (var k = 0; k < ccDoc.layers.length; k++) {{
+                        ccDoc.layers[k].locked = false;
+                    }}
+                }} catch (unlockError) {{
+                    localDoc.close(SaveOptions.DONOTSAVECHANGES);
+                    ccDoc.close(SaveOptions.DONOTSAVECHANGES);
+                    "ERROR unlocking layers: " + unlockError.toString();
+                    throw unlockError;
+                }}
                 
                 // Find the correct position: above any layer starting with "DXF"
                 var targetLayer = null;
@@ -60,18 +81,48 @@ try {{
                     }}
                 }}
                 
-                // Duplicate the layer to CC document at the correct position
-                var newLayer;
+                // Make source layer active and select all its items
+                try {{
+                    app.activeDocument = localDoc;
+                    var sourceLayer = localDoc.layers[sourceLayerIndex];
+                    localDoc.activeLayer = sourceLayer;
+                    localDoc.selection = null;
+                    var itemCount = sourceLayer.pageItems.length;
+                    
+                    // Select all items in source layer
+                    for (var j = 0; j < sourceLayer.pageItems.length; j++) {{
+                        sourceLayer.pageItems[j].selected = true;
+                    }}
+                    
+                    // Copy to clipboard
+                    app.copy();
+                    
+                    // Switch to CC document and create new layer
+                    app.activeDocument = ccDoc;
+                    var newLayer = ccDoc.layers.add();
+                    newLayer.name = sourceLayerName;
+                    newLayer.locked = false;
+                    ccDoc.activeLayer = newLayer;
+                    ccDoc.selection = null;
+                    
+                    // Paste items into new layer
+                    app.paste();
+                }} catch (copyError) {{
+                    localDoc.close(SaveOptions.DONOTSAVECHANGES);
+                    ccDoc.close(SaveOptions.DONOTSAVECHANGES);
+                    "ERROR during copy/paste: " + copyError.toString();
+                    throw copyError;
+                }}
+                
+                // Position the new layer correctly (after items are copied)
                 var positionMsg = "";
                 if (targetLayer) {{
                     // Place above the first DXF layer found
-                    newLayer = sourceLayer.duplicate(ccDoc, ElementPlacement.PLACEBEFORE);
                     newLayer.move(targetLayer, ElementPlacement.PLACEBEFORE);
                     positionMsg = " (placed above '" + targetLayer.name + "')";
                 }} else {{
-                    // No DXF layers found, place at the end (bottom)
-                    newLayer = sourceLayer.duplicate(ccDoc, ElementPlacement.PLACEATEND);
-                    positionMsg = " (placed at bottom - no DXF layers found)";
+                    // No DXF layers found, leave at top
+                    positionMsg = " (placed at top - no DXF layers found)";
                 }}
                 
                 // Save CC document without dialogs
@@ -81,7 +132,7 @@ try {{
                 // Close local document without saving
                 localDoc.close(SaveOptions.DONOTSAVECHANGES);
                 
-                "SUCCESS: Layer '" + sourceLayer.name + "' copied to CC Library file" + positionMsg;
+                "SUCCESS: Layer '" + sourceLayerName + "' with " + itemCount + " objects copied to CC Library file" + positionMsg;
             }}
         }}
     }}
