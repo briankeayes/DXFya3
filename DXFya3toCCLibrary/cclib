@@ -1,0 +1,43 @@
+#!/bin/bash
+# Quick wrapper for Creative Cloud Library operations
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+case "$1" in
+    open)
+        shift
+        python3 "$SCRIPT_DIR/open_from_library.py" "$@"
+        ;;
+    search)
+        shift
+        python3 "$SCRIPT_DIR/search_libraries.py" search "$@"
+        ;;
+    get)
+        shift
+        python3 "$SCRIPT_DIR/search_libraries.py" get "$@"
+        ;;
+    list)
+        python3 "$SCRIPT_DIR/search_libraries.py" list
+        ;;
+    update)
+        python3 "$SCRIPT_DIR/build_library_index.py"
+        ;;
+    *)
+        echo "Creative Cloud Library Tools"
+        echo ""
+        echo "Usage:"
+        echo "  cclib list                        - List all libraries"
+        echo "  cclib search <query> [library]    - Search for files"
+        echo "  cclib get <name> [library]        - Get file details"
+        echo "  cclib open <name> [library]       - Open file in Illustrator"
+        echo "  cclib update                      - Rebuild the index"
+        echo ""
+        echo "Examples:"
+        echo "  cclib search RT007760"
+        echo "  cclib open RT007760-bkdxfya librarytest"
+        echo "  cclib get RT007760 \"RaD Mechanical Design Library\""
+        echo ""
+        echo "⚡ All searches are instant using the indexed database"
+        ;;
+esac
+

@@ -1,0 +1,27 @@
+{
+  "_comment": "Map Adobe IDs to human-readable names",
+  "_instructions": "Add entries as you discover who the IDs belong to",
+  "users": {
+    "B1551D8067296A4B0A495CC0@593b69a566462365495fbf.e": {
+      "name": "User 1",
+      "email": "",
+      "notes": "Windows user - created/modified 02R"
+    },
+    "18D31E5266CC04BF0A495C94@AdobeID": {
+      "name": "User 2", 
+      "email": "",
+      "notes": "Windows user - created RT007760"
+    },
+    "574871D8664623650A495E65@593b69a566462365495fbf.e": {
+      "name": "User 3",
+      "email": "",
+      "notes": "Windows and Mac user"
+    },
+    "6D27744844570B5D992016E5@AdobeID": {
+      "name": "Brian (You)",
+      "email": "",
+      "notes": "Mac user - your Adobe ID"
+    }
+  }
+}
+

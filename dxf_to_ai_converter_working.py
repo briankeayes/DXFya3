@@ -448,6 +448,42 @@ def convert_dxf_to_ai(dxf_path, ai_path):
         
         # Check if the AI file was actually created
         if os.path.exists(ai_path):
+            # Ninth action: Update Creative Cloud Library file if it exists
+            print("🔍 Checking for matching Creative Cloud Library file...")
+            
+            # Extract base filename (without extension)
+            base_filename = os.path.splitext(os.path.basename(dxf_path))[0]
+            
+            # Path to the CC Library update script
+            cc_update_script = script_dir / "DXFya3toCCLibrary" / "update_cc_library_file.py"
+            
+            if cc_update_script.exists():
+                try:
+                    cc_result = subprocess.run([
+                        'python3', str(cc_update_script), 
+                        str(ai_path), 
+                        base_filename
+                    ], capture_output=True, text=True, timeout=120)
+                    
+                    # Display output
+                    if cc_result.stdout.strip():
+                        for line in cc_result.stdout.strip().split('\n'):
+                            print(f"   {line}")
+                    
+                    if cc_result.returncode == 0 and "SUCCESS:" in cc_result.stdout:
+                        print("☁️  CC Library file updated successfully")
+                    elif "No matching file found" in cc_result.stdout:
+                        print("ℹ️  No matching CC Library file found (this is normal if file isn't in CC)")
+                    else:
+                        print("⚠️  CC Library update had issues (continuing anyway)")
+                        
+                except subprocess.TimeoutExpired:
+                    print("⚠️  CC Library update timed out (continuing anyway)")
+                except Exception as e:
+                    print(f"⚠️  CC Library update failed: {e} (continuing anyway)")
+            else:
+                print("ℹ️  CC Library integration not installed (skipping)")
+            
             return True, "Success"
         else:
             return False, "AI file was not created"

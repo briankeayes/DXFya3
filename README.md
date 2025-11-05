@@ -75,6 +75,7 @@ A Python script that automatically detects DXF files in the `/DXF` folder, opens
 ## Features
 
 - **Fully Automated (Version 3.1)**: No user interaction required - all alerts and prompts suppressed
+- **Creative Cloud Integration (NEW)**: Automatically updates matching CC Library files with timestamped layers
 - **Automatic File Monitoring**: Detects new DXF files and converts them automatically
 - **Terminal Output**: All information displayed in terminal (no Illustrator alerts)
 - **ExtendScript Integration**: Canvas size checks, layer duplication, path extraction and joining

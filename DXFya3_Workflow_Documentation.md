@@ -145,6 +145,36 @@ DXFya3 is an automated DXF file monitoring and conversion system that processes 
       SUCCESS: Found 238 objects in layer '2024-01-15_14-30-25'. Analyzed 88 path items. Joined 3 overlapping paths.
    ```
 
+#### Step F: Creative Cloud Library Update (NEW in v3.1)
+**Duration**: ~30 seconds
+
+1. **Database Search**: Searches local CC Libraries database for matching filename
+2. **File Lookup**: Finds the local cached CC Library file path
+3. **Layer Copy**: Opens both files and duplicates timestamped layer to CC file
+4. **Save & Sync**: Saves CC file (Creative Cloud auto-syncs to cloud)
+
+5. **Console Output**
+   ```
+   🔍 Checking for matching Creative Cloud Library file...
+      🔍 Searching CC Libraries for: RT004127_cut
+      ✅ Found in CC Library: librarytest
+         Element: RT004127_cut
+      📂 CC File: RT004127_cut.ai
+      🔄 Copying timestamped layer to CC Library file...
+      ✅ SUCCESS: Layer '2024-01-15_14-30-25' copied to CC Library file
+      ☁️  Changes will sync to Creative Cloud automatically
+   ☁️  CC Library file updated successfully
+   ```
+
+**Note**: If no matching CC Library file exists, the process continues normally with a message:
+   ```
+   🔍 Checking for matching Creative Cloud Library file...
+      🔍 Searching CC Libraries for: RT004127_cut
+      ℹ️  No matching file found in CC Libraries
+         Searched for: RT004127_cut
+   ℹ️  No matching CC Library file found (this is normal if file isn't in CC)
+   ```
+
 ### Phase 3: File Operations
 
 #### Step F: Save & Close

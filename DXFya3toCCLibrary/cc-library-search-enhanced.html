@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creative Cloud Library Search - Enhanced</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .search-box {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .search-input:focus {
+            border-color: #667eea;
+        }
+        
+        .filters {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e0e0e0;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        
+        .filter-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .results {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .result-stats {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .element-item {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .element-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .element-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+        
+        .element-library {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        
+        .element-library .lib-name {
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .element-type {
+            display: inline-block;
+            padding: 3px 10px;
+            background: #e3f2fd;
+            color: #1976d2;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .element-type.color {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+        
+        .element-type.image {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+        
+        .element-type.text {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        
+        .element-info {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        
+        .element-link {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: background 0.3s;
+        }
+        
+        .element-link:hover {
+            background: #5568d3;
+        }
+        
+        .no-results {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+        }
+        
+        .library-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            background: #f59e0b;
+            color: white;
+            border-radius: 12px;
+            font-size: 11px;
+            margin-right: 8px;
+        }
+        
+        .library-badge.private {
+            background: #667eea;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Creative Cloud Library Search</h1>
+            <p>Search across all files and elements in your libraries</p>
+        </div>
+        
+        <div class="search-box">
+            <input 
+                type="text" 
+                class="search-input" 
+                id="searchInput" 
+                placeholder="Search by file name, element name, type, or library..."
+                autofocus
+            >
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">All Items</button>
+                <button class="filter-btn" data-filter="private">Private</button>
+                <button class="filter-btn" data-filter="shared">Shared</button>
+                <button class="filter-btn" data-type="color">Colors</button>
+                <button class="filter-btn" data-type="image">Images</button>
+                <button class="filter-btn" data-type="illustrator">Illustrator</button>
+            </div>
+        </div>
+        
+        <div class="results" id="results">
+            <div class="loading">Loading library data...</div>
+        </div>
+    </div>
+
+    <script src="library_elements.js"></script>
+    <script>
+        // Library URN mapping
+        const libraryURNs = {
+            '394aa2ed-b6d7-4015-8c9c-600e5a98ef84': 'urn:aaid:sc:AP:05827e24-a93b-4760-9534-06d518199994',
+            '5face365-482a-4a38-8d02-3238b4694c70': 'urn:aaid:sc:AP:f6bdb57c-e223-56e5-bb26-0ff6fcc8db29',
+            'db1fccc0-d43f-11e4-b86e-c1b9bb90ed5d': 'urn:aaid:sc:AP:e74fd067-6cda-46a7-9d04-568f712dbe7d',
+            '034378ca-4501-4f50-a4c5-e481418dbec6': 'urn:aaid:sc:AP:26fe2565-1901-458d-96aa-dde41d49ebd3',
+            '606ca72e-8e3e-4f2d-beb3-6305ef654adc': 'urn:aaid:sc:AP:9b0db71c-a30c-4ec0-a137-42d6a7a9cbe4',
+            '12cbb2ec-a147-4fb1-9f18-ef10175cd994': 'urn:aaid:sc:AP:3ad86d37-7bed-4a0d-af16-351e3ff14dec'
+        };
+
+        // Format bytes to human readable
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // Get element type category
+        function getTypeCategory(elementType, fileType) {
+            if (elementType.includes('color')) return 'color';
+            if (elementType.includes('image') || fileType === 'application/illustrator') return 'image';
+            if (elementType.includes('text')) return 'text';
+            return 'other';
+        }
+
+        // Generate library URL
+        function getLibraryUrl(libraryId, elementId) {
+            const urn = libraryURNs[libraryId];
+            if (urn) {
+                return `https://assets.adobe.com/libraries/${encodeURIComponent(urn)}`;
+            }
+            return '#';
+        }
+
+        // Search and filter elements
+        function searchElements(query, filterType, typeFilter) {
+            const searchTerm = query.toLowerCase();
+            
+            return libraryElements.filter(el => {
+                // Apply library type filter
+                if (filterType !== 'all' && el.library_type !== filterType) {
+                    return false;
+                }
+                
+                // Apply element type filter
+                if (typeFilter) {
+                    const category = getTypeCategory(el.element_type, el.file_type);
+                    if (typeFilter === 'illustrator' && el.file_type !== 'application/illustrator') {
+                        return false;
+                    } else if (typeFilter !== 'illustrator' && category !== typeFilter) {
+                        return false;
+                    }
+                }
+                
+                // Apply search query
+                if (searchTerm) {
+                    const searchableText = [
+                        el.element_name,
+                        el.file_name,
+                        el.library_name,
+                        el.element_type,
+                        el.file_type
+                    ].join(' ').toLowerCase();
+                    
+                    return searchableText.includes(searchTerm);
+                }
+                
+                return true;
+            });
+        }
+
+        // Render results
+        function renderResults(results) {
+            const resultsEl = document.getElementById('results');
+            
+            const statsHtml = `<div class="result-stats">Found ${results.length} ${results.length === 1 ? 'item' : 'items'}</div>`;
+            
+            if (results.length === 0) {
+                resultsEl.innerHTML = statsHtml + '<div class="no-results">No items found matching your search.</div>';
+                return;
+            }
+            
+            const itemsHtml = results.slice(0, 100).map(el => {
+                const category = getTypeCategory(el.element_type, el.file_type);
+                const libBadgeClass = el.library_type === 'shared' ? 'shared' : 'private';
+                const fileName = el.file_name ? `<div class="element-info">📄 ${el.file_name}</div>` : '';
+                const fileSize = el.file_size > 0 ? `<div class="element-info">💾 ${formatBytes(el.file_size)}</div>` : '';
+                
+                return `
+                    <div class="element-item">
+                        <div class="element-name">${el.element_name}</div>
+                        <div class="element-library">
+                            <span class="library-badge ${libBadgeClass}">${el.library_type}</span>
+                            in <span class="lib-name">${el.library_name}</span>
+                        </div>
+                        <span class="element-type ${category}">${el.file_type || el.element_type.split('.').pop()}</span>
+                        ${fileName}
+                        ${fileSize}
+                        <a href="${getLibraryUrl(el.library_id, el.element_id)}" class="element-link" target="_blank">
+                            Open Library →
+                        </a>
+                    </div>
+                `;
+            }).join('');
+            
+            const limitNote = results.length > 100 ? 
+                '<div class="result-stats">Showing first 100 results. Refine your search for more specific results.</div>' : '';
+            
+            resultsEl.innerHTML = statsHtml + itemsHtml + limitNote;
+        }
+
+        // Event listeners
+        let currentFilter = 'all';
+        let currentTypeFilter = null;
+        
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const results = searchElements(e.target.value, currentFilter, currentTypeFilter);
+            renderResults(results);
+        });
+        
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const filterType = e.target.dataset.filter;
+                const typeFilter = e.target.dataset.type;
+                
+                if (filterType) {
+                    // Library type filter
+                    document.querySelectorAll('[data-filter]').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentFilter = filterType;
+                } else if (typeFilter) {
+                    // Element type filter - toggle
+                    if (currentTypeFilter === typeFilter) {
+                        e.target.classList.remove('active');
+                        currentTypeFilter = null;
+                    } else {
+                        document.querySelectorAll('[data-type]').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        currentTypeFilter = typeFilter;
+                    }
+                }
+                
+                const searchTerm = document.getElementById('searchInput').value;
+                const results = searchElements(searchTerm, currentFilter, currentTypeFilter);
+                renderResults(results);
+            });
+        });
+
+        // Initial render
+        if (typeof libraryElements !== 'undefined') {
+            renderResults(libraryElements.slice(0, 100));
+        } else {
+            document.getElementById('results').innerHTML = '<div class="no-results">Error: Library data not loaded. Please ensure library_elements.js is present.</div>';
+        }
+    </script>
+</body>
+</html>
+
