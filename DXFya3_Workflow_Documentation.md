@@ -146,17 +146,22 @@ DXFya3 is an automated DXF file monitoring and conversion system that processes 
    ```
 
 #### Step F: Creative Cloud Library Update (NEW in v3.1)
-**Duration**: ~30 seconds
+**Duration**: ~30-60 seconds
 
-1. **Database Search**: Searches local CC Libraries database for matching filename
-2. **File Lookup**: Finds the local cached CC Library file path
-3. **Layer Positioning**: Finds the first layer starting with "DXF" in the CC file
-4. **Layer Copy**: Opens both files and duplicates timestamped layer above DXF layers
-5. **Save & Sync**: Saves CC file (Creative Cloud auto-syncs to cloud)
+1. **Database Update**: Runs `./cclib update` to refresh the CC Libraries database with latest files
+2. **Database Search**: Searches local CC Libraries database for matching filename
+3. **File Lookup**: Finds the local cached CC Library file path
+4. **Layer Positioning**: Finds the first layer starting with "DXF" in the CC file
+5. **Layer Copy**: Opens both files and duplicates timestamped layer above DXF layers
+6. **Save & Sync**: Saves CC file (Creative Cloud auto-syncs to cloud)
 
-6. **Console Output**
+7. **Console Output**
    ```
    🔍 Checking for matching Creative Cloud Library file...
+   📊 Updating CC Library database...
+      Total libraries: 8
+      Total elements: 1536
+   ✅ CC Library database updated
       🔍 Searching CC Libraries for: RT004127_cut
       ✅ Found in CC Library: librarytest
          Element: RT004127_cut

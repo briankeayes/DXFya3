@@ -451,6 +451,31 @@ def convert_dxf_to_ai(dxf_path, ai_path):
             # Ninth action: Update Creative Cloud Library file if it exists
             print("🔍 Checking for matching Creative Cloud Library file...")
             
+            # First, update the CC Library database to ensure we have the latest
+            cclib_dir = script_dir / "DXFya3toCCLibrary"
+            cclib_cmd = cclib_dir / "cclib"
+            
+            if cclib_cmd.exists():
+                print("📊 Updating CC Library database...")
+                try:
+                    update_result = subprocess.run([
+                        str(cclib_cmd), 'update'
+                    ], capture_output=True, text=True, timeout=60, cwd=str(cclib_dir))
+                    
+                    if update_result.returncode == 0:
+                        # Extract just the summary line
+                        output_lines = update_result.stdout.strip().split('\n')
+                        for line in output_lines:
+                            if 'Total libraries:' in line or 'Total elements:' in line:
+                                print(f"   {line.strip()}")
+                        print("✅ CC Library database updated")
+                    else:
+                        print("⚠️  CC Library database update had issues (continuing anyway)")
+                except subprocess.TimeoutExpired:
+                    print("⚠️  CC Library database update timed out (continuing anyway)")
+                except Exception as e:
+                    print(f"⚠️  CC Library database update failed: {e} (continuing anyway)")
+            
             # Extract base filename (without extension)
             base_filename = os.path.splitext(os.path.basename(dxf_path))[0]
             
