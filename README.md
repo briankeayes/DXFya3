@@ -1,6 +1,8 @@
-# DXFya3 - DXF to AI Converter with Monitor
+# DXFya3 - DXF to AI Converter with Monitor (Version 3.1)
 
 A Python script that automatically detects DXF files in the `/DXF` folder, opens them in Adobe Illustrator, runs ExtendScript actions, and saves them as AI files in the `/AI` folder. Includes a file monitor for automatic processing.
+
+**Version 3.1**: Fully automated workflow with no user interaction required - all alerts and prompts suppressed.
 
 ## Requirements
 
@@ -43,10 +45,13 @@ A Python script that automatically detects DXF files in the `/DXF` folder, opens
 2. Checks if Adobe Illustrator is running (launches it if not)
 3. For each DXF file:
    - Opens it in Illustrator using AppleScript
-   - Runs ExtendScript actions (canvas size check, large canvas detection)
-   - Displays an alert with canvas dimensions and large canvas status
-   - Saves it as an AI file in the `AI` folder
-   - Closes the document
+   - Suppresses all Illustrator dialogs and alerts (Version 3.1)
+   - Runs ExtendScript actions (canvas size check, layer duplication, path extraction)
+   - Outputs canvas dimensions to terminal (no alerts)
+   - Creates timestamped layers with all objects
+   - Extracts and joins overlapping paths
+   - Saves it as an AI file in the `AI` folder (no save prompts)
+   - Closes the document without prompting
 4. Provides a summary of successful and failed conversions
 
 ## Notes
@@ -69,9 +74,13 @@ A Python script that automatically detects DXF files in the `/DXF` folder, opens
 
 ## Features
 
+- **Fully Automated (Version 3.1)**: No user interaction required - all alerts and prompts suppressed
 - **Automatic File Monitoring**: Detects new DXF files and converts them automatically
-- **ExtendScript Integration**: Runs canvas size checks and large canvas detection
+- **Terminal Output**: All information displayed in terminal (no Illustrator alerts)
+- **ExtendScript Integration**: Canvas size checks, layer duplication, path extraction and joining
+- **Timestamped Layers**: Creates organized layers with date/time stamps
+- **Path Processing**: Automatically extracts paths from groups and joins overlapping endpoints
 - **Multiple Usage Options**: Monitor mode, manual conversion, or single file processing
-- **Real-time Feedback**: Shows conversion progress and status
+- **Real-time Feedback**: Shows conversion progress and status in terminal
 - **Error Handling**: Graceful handling of timeouts and conversion errors
 - **No External Dependencies**: Uses only built-in Python modules and AppleScript

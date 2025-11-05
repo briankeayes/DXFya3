@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-DXF to AI Converter - Working Version with Layer Duplication
+DXF to AI Converter - Version 3.1 - Fully Automated (No User Interaction)
 Detects DXF files in the /DXF folder, opens them in Adobe Illustrator, runs ExtendScript actions, and saves them as AI files in the /AI folder.
 Uses AppleScript to control Illustrator, run canvas size checks, and perform layer operations before saving.
+Version 3.1: All alerts and prompts removed - fully automated workflow.
 """
 
 import os
@@ -50,6 +51,24 @@ def convert_dxf_to_ai(dxf_path, ai_path):
         
         # Wait for file to load
         time.sleep(3)
+        
+        # Suppress all Illustrator dialogs and alerts (Version 3.1 - No User Interaction)
+        suppress_dialogs_script = '''
+        tell application "Adobe Illustrator"
+            try
+                set user interaction level of application preferences to never interact
+            on error
+                -- Ignore if setting not available in this Illustrator version
+            end try
+        end tell
+        '''
+        
+        try:
+            subprocess.run(['osascript', '-e', suppress_dialogs_script], 
+                         capture_output=True, text=True, timeout=10)
+        except:
+            # Continue even if dialog suppression fails
+            pass
         
         # Run ExtendScript actions before saving
         # First action: Check if large canvas and display canvas size
@@ -391,16 +410,35 @@ def convert_dxf_to_ai(dxf_path, ai_path):
         else:
             print("⚠️  Simple join script not found, skipping...")
         
-        # Save as AI file
-        save_script = f'tell application "Adobe Illustrator" to save document 1 in POSIX file "{ai_path}"'
+        # Save as AI file (Version 3.1 - No prompts)
+        save_script = f'''
+        tell application "Adobe Illustrator"
+            try
+                set user interaction level of application preferences to never interact
+                save document 1 in POSIX file "{ai_path}" without dialogs
+            on error errMsg
+                -- Try without the without dialogs option if not supported
+                save document 1 in POSIX file "{ai_path}"
+            end try
+        end tell
+        '''
         result2 = subprocess.run(['osascript', '-e', save_script], 
                                capture_output=True, text=True, timeout=60)
         
         if result2.returncode != 0:
             return False, f"Failed to save AI file: {result2.stderr.strip()}"
         
-        # Close the document (don't fail if this times out)
-        close_script = 'tell application "Adobe Illustrator" to close document 1'
+        # Close the document without prompting (Version 3.1 - No user interaction)
+        close_script = '''
+        tell application "Adobe Illustrator"
+            try
+                set user interaction level of application preferences to never interact
+                close document 1 saving no
+            on error
+                close document 1
+            end try
+        end tell
+        '''
         try:
             result3 = subprocess.run(['osascript', '-e', close_script], 
                                    capture_output=True, text=True, timeout=30)
@@ -484,9 +522,13 @@ def main():
     dxf_folder = script_dir / "DXF"
     ai_folder = script_dir / "AI"
     
-    print("DXF to AI Converter - Working Version")
+    print("DXF to AI Converter - Version 3.1")
     print("====================================")
-    print("Features: Canvas size check, large canvas detection, layer duplication")
+    print("Features: Fully automated workflow - No user interaction required")
+    print("  - Canvas size check (terminal output)")
+    print("  - Layer duplication with timestamping")
+    print("  - Path extraction and joining")
+    print("  - All alerts and prompts suppressed")
     
     # Ensure AI folder exists
     ensure_ai_folder(ai_folder)
