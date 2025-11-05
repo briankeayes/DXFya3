@@ -150,10 +150,11 @@ DXFya3 is an automated DXF file monitoring and conversion system that processes 
 
 1. **Database Search**: Searches local CC Libraries database for matching filename
 2. **File Lookup**: Finds the local cached CC Library file path
-3. **Layer Copy**: Opens both files and duplicates timestamped layer to CC file
-4. **Save & Sync**: Saves CC file (Creative Cloud auto-syncs to cloud)
+3. **Layer Positioning**: Finds the first layer starting with "DXF" in the CC file
+4. **Layer Copy**: Opens both files and duplicates timestamped layer above DXF layers
+5. **Save & Sync**: Saves CC file (Creative Cloud auto-syncs to cloud)
 
-5. **Console Output**
+6. **Console Output**
    ```
    🔍 Checking for matching Creative Cloud Library file...
       🔍 Searching CC Libraries for: RT004127_cut
@@ -161,10 +162,23 @@ DXFya3 is an automated DXF file monitoring and conversion system that processes 
          Element: RT004127_cut
       📂 CC File: RT004127_cut.ai
       🔄 Copying timestamped layer to CC Library file...
-      ✅ SUCCESS: Layer '2024-01-15_14-30-25' copied to CC Library file
+      ✅ SUCCESS: Layer '2024-01-15_14-30-25' copied to CC Library file (placed above 'DXF 29.10.2025')
       ☁️  Changes will sync to Creative Cloud automatically
    ☁️  CC Library file updated successfully
    ```
+
+**Layer Positioning Logic**:
+- The new timestamped layer is placed **above** the first layer starting with "DXF"
+- This ensures the layer order is: Content Layers → New Timestamped Layer → Old DXF Layers
+- Example layer stack after update:
+  ```
+  Full Cut
+  Rear V-Cut
+  2024-11-05_15-30-45  ← New timestamped layer
+  DXF 29.10.2025
+  DXF 16.09.2025
+  DXF 28.08.2025
+  ```
 
 **Note**: If no matching CC Library file exists, the process continues normally with a message:
    ```

@@ -51,8 +51,28 @@ try {{
             }} else {{
                 var ccDoc = app.open(ccFile);
                 
-                // Duplicate the layer to CC document
-                var newLayer = sourceLayer.duplicate(ccDoc, ElementPlacement.PLACEATBEGINNING);
+                // Find the correct position: above any layer starting with "DXF"
+                var targetLayer = null;
+                for (var i = 0; i < ccDoc.layers.length; i++) {{
+                    if (ccDoc.layers[i].name.indexOf("DXF") === 0) {{
+                        targetLayer = ccDoc.layers[i];
+                        break;
+                    }}
+                }}
+                
+                // Duplicate the layer to CC document at the correct position
+                var newLayer;
+                var positionMsg = "";
+                if (targetLayer) {{
+                    // Place above the first DXF layer found
+                    newLayer = sourceLayer.duplicate(ccDoc, ElementPlacement.PLACEBEFORE);
+                    newLayer.move(targetLayer, ElementPlacement.PLACEBEFORE);
+                    positionMsg = " (placed above '" + targetLayer.name + "')";
+                }} else {{
+                    // No DXF layers found, place at the end (bottom)
+                    newLayer = sourceLayer.duplicate(ccDoc, ElementPlacement.PLACEATEND);
+                    positionMsg = " (placed at bottom - no DXF layers found)";
+                }}
                 
                 // Save CC document without dialogs
                 ccDoc.save();
@@ -61,7 +81,7 @@ try {{
                 // Close local document without saving
                 localDoc.close(SaveOptions.DONOTSAVECHANGES);
                 
-                "SUCCESS: Layer '" + sourceLayer.name + "' copied to CC Library file";
+                "SUCCESS: Layer '" + sourceLayer.name + "' copied to CC Library file" + positionMsg;
             }}
         }}
     }}
