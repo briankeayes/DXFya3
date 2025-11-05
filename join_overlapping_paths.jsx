@@ -16,11 +16,12 @@ try {
         if (totalObjects < 2) {
             "INFO: Not enough objects to find overlaps. Found " + totalObjects + " objects in layer '" + layerName + "'";
         } else {
-            // Find all path items in the layer
+            // Find all path items in the layer (after ungrouping, should be direct PathItems)
             var pathItems = [];
             for (var i = 0; i < timestampedLayer.pageItems.length; i++) {
-                if (timestampedLayer.pageItems[i].typename == "PathItem") {
-                    pathItems.push(timestampedLayer.pageItems[i]);
+                var item = timestampedLayer.pageItems[i];
+                if (item.typename == "PathItem") {
+                    pathItems.push(item);
                 }
             }
             
@@ -75,6 +76,21 @@ try {
     }
 } catch (error) {
     "ERROR: " + error.toString();
+}
+
+// Helper function to recursively collect PathItems from groups
+function collectPathItems(item, pathItems) {
+    if (item.typename == "PathItem") {
+        pathItems.push(item);
+    } else if (item.typename == "GroupItem") {
+        // Recursively search inside groups
+        for (var i = 0; i < item.pageItems.length; i++) {
+            collectPathItems(item.pageItems[i], pathItems);
+        }
+    } else if (item.typename == "CompoundPathItem") {
+        // Handle compound paths
+        pathItems.push(item);
+    }
 }
 
 // Helper function to get path points

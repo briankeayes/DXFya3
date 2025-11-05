@@ -62,17 +62,18 @@ DXFya3 is an automated DXF file monitoring and conversion system that processes 
    ```
 
 #### Step B: Canvas Size Check
-**Duration**: ~30 seconds (with user interaction)
+**Duration**: ~30 seconds
 
 1. **Canvas Analysis**
    - Measures document width and height in inches
    - Determines if canvas is "large" (>227.5 inches)
-   - Shows popup alert with canvas information
+   - Outputs canvas information to terminal log
 
 2. **Console Output**
    ```
    Running canvas size check...
    Canvas check completed successfully
+   📐 CANVAS INFO: Canvas Size: 8.5 x 11 inches, Large Canvas: false
    ```
 
 #### Step C: Layer Duplication

@@ -47,8 +47,11 @@ try {
                 var duplicatedItem = allItems[i].duplicate(newLayer, ElementPlacement.PLACEATEND);
             }
             
-            // Return success message
-            "SUCCESS: Created layer '" + layerName + "' with " + allItems.length + " objects (total found: " + totalObjects + "). Original layers preserved.";
+            // Count objects in the new layer after duplication
+            var objectsInNewLayer = newLayer.pageItems.length;
+            
+            // Return detailed success message
+            "SUCCESS: Created layer '" + layerName + "' with " + objectsInNewLayer + " objects. Original layers preserved. Total objects processed: " + allItems.length + " (total found in document: " + totalObjects + ")";
         } else {
             "WARNING: No objects found to copy (total objects in doc: " + totalObjects + ")";
         }

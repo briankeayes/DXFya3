@@ -188,3 +188,4 @@ git pull origin main
 ---
 
 *This installation guide ensures DXFya3 works correctly on any Mac system with the proper prerequisites.*
+

@@ -48,7 +48,16 @@ try {
                 typeName == "GroupItem" ||
                 (item.pathPoints && item.pathPoints.length > 0)) {
                 pathRelatedCount++;
-                if (pathRelatedTypes.indexOf(typeName) == -1) {
+                
+                // Check if type already exists in array (ExtendScript compatible)
+                var typeExists = false;
+                for (var k = 0; k < pathRelatedTypes.length; k++) {
+                    if (pathRelatedTypes[k] == typeName) {
+                        typeExists = true;
+                        break;
+                    }
+                }
+                if (!typeExists) {
                     pathRelatedTypes.push(typeName);
                 }
             }

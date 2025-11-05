@@ -61,8 +61,8 @@ def convert_dxf_to_ai(dxf_path, ai_path):
                     set docWidth to width
                     set docHeight to height
                     set isLargeCanvas to (docWidth > 227.5 or docHeight > 227.5)
-                    set alertMessage to "Canvas Size: " & docWidth & " x " & docHeight & " inches" & return & "Large Canvas: " & isLargeCanvas
-                    display alert alertMessage
+                    set canvasInfo to "Canvas Size: " & docWidth & " x " & docHeight & " inches, Large Canvas: " & isLargeCanvas
+                    return canvasInfo
                 end tell
             on error errMsg
                 return "Error: " & errMsg
@@ -71,13 +71,22 @@ def convert_dxf_to_ai(dxf_path, ai_path):
         '''
         
         print("Running canvas size check...")
-        canvas_result = subprocess.run(['osascript', '-e', canvas_check_script], 
-                                     capture_output=True, text=True, timeout=30)
-        
-        if canvas_result.returncode != 0:
-            print(f"Warning: Canvas check failed: {canvas_result.stderr.strip()}")
-        else:
-            print("Canvas check completed successfully")
+        try:
+            canvas_result = subprocess.run(['osascript', '-e', canvas_check_script], 
+                                         capture_output=True, text=True, timeout=30)
+            
+            if canvas_result.returncode != 0:
+                print(f"Warning: Canvas check failed: {canvas_result.stderr.strip()}")
+            else:
+                print("Canvas check completed successfully")
+                # Display canvas information in terminal
+                canvas_info = canvas_result.stdout.strip()
+                if canvas_info and not canvas_info.startswith("Error:"):
+                    print(f"📐 CANVAS INFO: {canvas_info}")
+                elif canvas_info.startswith("Error:"):
+                    print(f"❌ Canvas check error: {canvas_info}")
+        except subprocess.TimeoutExpired:
+            print("Canvas check timed out, but continuing with conversion")
         
         # Second action: Move objects directly to new timestamped layer
         script_dir = Path(__file__).parent
@@ -106,6 +115,281 @@ def convert_dxf_to_ai(dxf_path, ai_path):
             print(f"Warning: Layer duplication failed: {layer_result.stderr.strip()}")
         else:
             print("Layer duplication completed successfully")
+            
+            # Parse and display object count information
+            result_text = layer_result.stdout.strip()
+            if "SUCCESS:" in result_text and "objects" in result_text:
+                print("📊 OBJECT COUNT SUMMARY:")
+                print(f"   {result_text}")
+            elif "WARNING:" in result_text:
+                print(f"⚠️  {result_text}")
+        
+        # Third action: Analyze object types
+        analyze_script_path = script_dir / "analyze_object_types.jsx"
+        
+        if analyze_script_path.exists():
+            analyze_script = f'''
+            tell application "Adobe Illustrator"
+                try
+                    set scriptResult to do javascript file POSIX file "{analyze_script_path}"
+                    return scriptResult
+                on error errMsg
+                    return "Error running object analysis script: " & errMsg
+                end try
+            end tell
+            '''
+            
+            print("Running object type analysis...")
+            analyze_result = subprocess.run(['osascript', '-e', analyze_script], 
+                                          capture_output=True, text=True, timeout=30)
+            
+            print(f"Object analysis result: {analyze_result.stdout.strip()}")
+            if analyze_result.stderr.strip():
+                print(f"Object analysis stderr: {analyze_result.stderr.strip()}")
+            
+            if analyze_result.returncode != 0:
+                print(f"Warning: Object analysis failed: {analyze_result.stderr.strip()}")
+            else:
+                print("Object analysis completed successfully")
+                
+                # Display analysis results
+                analyze_text = analyze_result.stdout.strip()
+                if "OBJECT TYPE ANALYSIS" in analyze_text:
+                    print("🔍 OBJECT TYPE ANALYSIS:")
+                    # Split by newlines and display each line with proper indentation
+                    lines = analyze_text.split('\n')
+                    for line in lines:
+                        if line.strip() != "":
+                            print(f"   {line}")
+        else:
+            print("⚠️  Object analysis script not found, skipping...")
+        
+        # Fourth action: Diagnose GroupItem contents
+        diagnose_script_path = script_dir / "diagnose_groups.jsx"
+        
+        if diagnose_script_path.exists():
+            diagnose_script = f'''
+            tell application "Adobe Illustrator"
+                try
+                    set scriptResult to do javascript file POSIX file "{diagnose_script_path}"
+                    return scriptResult
+                on error errMsg
+                    return "Error running group diagnosis script: " & errMsg
+                end try
+            end tell
+            '''
+            
+            print("Running group diagnosis...")
+            diagnose_result = subprocess.run(['osascript', '-e', diagnose_script], 
+                                           capture_output=True, text=True, timeout=30)
+            
+            print(f"Group diagnosis result: {diagnose_result.stdout.strip()}")
+            if diagnose_result.stderr.strip():
+                print(f"Group diagnosis stderr: {diagnose_result.stderr.strip()}")
+            
+            if diagnose_result.returncode != 0:
+                print(f"Warning: Group diagnosis failed: {diagnose_result.stderr.strip()}")
+            else:
+                print("Group diagnosis completed successfully")
+                
+                # Display diagnosis results
+                diagnose_text = diagnose_result.stdout.strip()
+                if "GROUP ANALYSIS" in diagnose_text:
+                    print("🔍 GROUP DIAGNOSIS:")
+                    lines = diagnose_text.split('\n')
+                    for line in lines:
+                        if line.strip() != "":
+                            print(f"   {line}")
+        else:
+            print("⚠️  Group diagnosis script not found, skipping...")
+        
+        # Fifth action: Debug ungrouping process
+        debug_script_path = script_dir / "debug_ungroup.jsx"
+        
+        if debug_script_path.exists():
+            debug_script = f'''
+            tell application "Adobe Illustrator"
+                try
+                    set scriptResult to do javascript file POSIX file "{debug_script_path}"
+                    return scriptResult
+                on error errMsg
+                    return "Error running debug script: " & errMsg
+                end try
+            end tell
+            '''
+            
+            print("Running ungroup debugging...")
+            debug_result = subprocess.run(['osascript', '-e', debug_script], 
+                                        capture_output=True, text=True, timeout=30)
+            
+            print(f"Debug result: {debug_result.stdout.strip()}")
+            if debug_result.stderr.strip():
+                print(f"Debug stderr: {debug_result.stderr.strip()}")
+            
+            if debug_result.returncode != 0:
+                print(f"Warning: Debug failed: {debug_result.stderr.strip()}")
+            else:
+                print("Debug completed successfully")
+                
+                # Display debug results
+                debug_text = debug_result.stdout.strip()
+                if "DEBUG UNGROUPING" in debug_text:
+                    print("🔍 DEBUG UNGROUPING:")
+                    lines = debug_text.split('\n')
+                    for line in lines:
+                        if line.strip() != "":
+                            print(f"   {line}")
+        else:
+            print("⚠️  Debug script not found, skipping...")
+        
+        # Sixth action: Ungroup all objects in timestamped layer
+        ungroup_script_path = script_dir / "ungroup_objects.jsx"
+        
+        if ungroup_script_path.exists():
+            ungroup_script = f'''
+            tell application "Adobe Illustrator"
+                try
+                    set scriptResult to do javascript file POSIX file "{ungroup_script_path}"
+                    return scriptResult
+                on error errMsg
+                    return "Error running ungroup script: " & errMsg
+                end try
+            end tell
+            '''
+            
+            print("Running object ungrouping...")
+            ungroup_result = subprocess.run(['osascript', '-e', ungroup_script], 
+                                          capture_output=True, text=True, timeout=60)
+            
+            print(f"Ungroup result: {ungroup_result.stdout.strip()}")
+            if ungroup_result.stderr.strip():
+                print(f"Ungroup stderr: {ungroup_result.stderr.strip()}")
+            
+            if ungroup_result.returncode != 0:
+                print(f"Warning: Ungrouping failed: {ungroup_result.stderr.strip()}")
+            else:
+                print("Object ungrouping completed successfully")
+                
+                # Display ungroup results
+                ungroup_text = ungroup_result.stdout.strip()
+                if "SUCCESS:" in ungroup_text:
+                    print("📦 UNGROUP SUMMARY:")
+                    print(f"   {ungroup_text}")
+        else:
+            print("⚠️  Ungroup script not found, skipping...")
+        
+        # Sixth action: Extract PathItems from GroupItems
+        extract_script_path = script_dir / "extract_paths.jsx"
+        
+        if extract_script_path.exists():
+            extract_script = f'''
+            tell application "Adobe Illustrator"
+                try
+                    set scriptResult to do javascript file POSIX file "{extract_script_path}"
+                    return scriptResult
+                on error errMsg
+                    return "Error running path extraction script: " & errMsg
+                end try
+            end tell
+            '''
+            
+            print("Running path extraction...")
+            extract_result = subprocess.run(['osascript', '-e', extract_script], 
+                                          capture_output=True, text=True, timeout=60)
+            
+            print(f"Path extraction result: {extract_result.stdout.strip()}")
+            if extract_result.stderr.strip():
+                print(f"Path extraction stderr: {extract_result.stderr.strip()}")
+            
+            if extract_result.returncode != 0:
+                print(f"Warning: Path extraction failed: {extract_result.stderr.strip()}")
+            else:
+                print("Path extraction completed successfully")
+                
+                # Display extraction results
+                extract_text = extract_result.stdout.strip()
+                if "SUCCESS:" in extract_text:
+                    print("📤 PATH EXTRACTION SUMMARY:")
+                    print(f"   {extract_text}")
+        else:
+            print("⚠️  Path extraction script not found, skipping...")
+        
+        # Seventh action: Debug PathItems and overlap detection
+        debug_paths_script_path = script_dir / "debug_paths.jsx"
+        
+        if debug_paths_script_path.exists():
+            debug_paths_script = f'''
+            tell application "Adobe Illustrator"
+                try
+                    set scriptResult to do javascript file POSIX file "{debug_paths_script_path}"
+                    return scriptResult
+                on error errMsg
+                    return "Error running path debug script: " & errMsg
+                end try
+            end tell
+            '''
+            
+            print("Running path debugging...")
+            debug_paths_result = subprocess.run(['osascript', '-e', debug_paths_script], 
+                                              capture_output=True, text=True, timeout=30)
+            
+            print(f"Path debug result: {debug_paths_result.stdout.strip()}")
+            if debug_paths_result.stderr.strip():
+                print(f"Path debug stderr: {debug_paths_result.stderr.strip()}")
+            
+            if debug_paths_result.returncode != 0:
+                print(f"Warning: Path debug failed: {debug_paths_result.stderr.strip()}")
+            else:
+                print("Path debug completed successfully")
+                
+                # Display debug results
+                debug_paths_text = debug_paths_result.stdout.strip()
+                if "PATH ANALYSIS" in debug_paths_text:
+                    print("🔍 PATH DEBUG ANALYSIS:")
+                    lines = debug_paths_text.split('\n')
+                    for line in lines:
+                        if line.strip() != "":
+                            print(f"   {line}")
+        else:
+            print("⚠️  Path debug script not found, skipping...")
+        
+        # Eighth action: Simple path joining using Illustrator's join command
+        simple_join_script_path = script_dir / "simple_join_paths.jsx"
+        
+        if simple_join_script_path.exists():
+            simple_join_script = f'''
+            tell application "Adobe Illustrator"
+                try
+                    set scriptResult to do javascript file POSIX file "{simple_join_script_path}"
+                    return scriptResult
+                on error errMsg
+                    return "Error running simple join script: " & errMsg
+                end try
+            end tell
+            '''
+            
+            print("Running simple path joining...")
+            simple_join_result = subprocess.run(['osascript', '-e', simple_join_script], 
+                                               capture_output=True, text=True, timeout=60)
+            
+            print(f"Simple join result: {simple_join_result.stdout.strip()}")
+            if simple_join_result.stderr.strip():
+                print(f"Simple join stderr: {simple_join_result.stderr.strip()}")
+            
+            if simple_join_result.returncode != 0:
+                print(f"Warning: Simple path joining failed: {simple_join_result.stderr.strip()}")
+            else:
+                print("Simple path joining completed successfully")
+                
+                # Parse and display path joining information
+                simple_join_text = simple_join_result.stdout.strip()
+                if "SUCCESS:" in simple_join_text:
+                    print("🔗 SIMPLE PATH JOINING SUMMARY:")
+                    print(f"   {simple_join_text}")
+                elif "INFO:" in simple_join_text:
+                    print(f"ℹ️  {simple_join_text}")
+        else:
+            print("⚠️  Simple join script not found, skipping...")
         
         # Save as AI file
         save_script = f'tell application "Adobe Illustrator" to save document 1 in POSIX file "{ai_path}"'
